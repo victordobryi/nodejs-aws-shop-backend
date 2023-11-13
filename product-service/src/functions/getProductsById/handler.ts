@@ -1,9 +1,8 @@
-import { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
 import { products } from 'src/mockData';
 import { buildResponse } from 'src/utils/buildResponse';
-import schema from './schema';
+import { APIGatewayProxyHandler } from 'aws-lambda';
 
-export const getProductsById: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
+export const getProductsById: APIGatewayProxyHandler = async (event) => {
   const { productId } = event.pathParameters;
   try {
     const product = products.find((product) => product.id === productId);
