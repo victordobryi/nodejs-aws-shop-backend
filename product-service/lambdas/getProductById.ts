@@ -11,6 +11,9 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   }
   try {
     const product = await findOne(pathParameters.productId);
+
+    if (!product) return buildResponse(404, { message: 'Product not found' });
+
     return buildResponse(200, product);
   } catch (error) {
     return buildResponse(500, {
