@@ -24,6 +24,7 @@
     "typescript": "~5.2.2"
   },
   "dependencies": {
+    "@pepperize/cdk-apigateway-swagger-ui": "^0.0.907",
     "@types/aws-lambda": "^8.10.129",
     "aws-cdk-lib": "2.105.0",
     "constructs": "^10.0.0",

@@ -2,6 +2,7 @@ import { Stack, StackProps } from 'aws-cdk-lib';
 import { Lambda } from './Lambda';
 import { Construct } from 'constructs';
 import { ApiGateway } from './ApiGateway';
+import { SwaggerUi } from '@pepperize/cdk-apigateway-swagger-ui';
 
 export class ProductStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -14,5 +15,7 @@ export class ProductStack extends Stack {
 
     const getProductsById = new Lambda(this, 'getProductById');
     api.addIntegration('GET', '/products/{productId}', getProductsById);
+
+    new SwaggerUi(this, 'SwaggerUI', { resource: api.root });
   }
 }
