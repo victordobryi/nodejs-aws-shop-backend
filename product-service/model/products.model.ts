@@ -1,9 +1,11 @@
 import { DynamoDBClient, QueryCommand, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { FullProduct, Product, ProductsRecord } from '../types/product';
 import { TABLE_NAME } from '../types/table';
 import { Stocks, StocksRecord } from '../types/stocks';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { TypedQueryOutput, TypedScanCommandOutput } from '../types/types';
+import { v4 as uuidv4 } from 'uuid';
 
 const client = new DynamoDBClient({});
 
@@ -70,6 +72,37 @@ const findOne = async (id: string): Promise<FullProduct | undefined> => {
   };
 
   return fullProduct;
+};
+
+const createOne = async (body: string): Promise<FullProduct> => {
+  const id = uuidv4();
+  const product: FullProduct = { id, ...JSON.parse(body) };
+  const stock = { product_id: id, count: product.count };
+
+  await client.send(
+    new TransactWriteCommand({
+      TransactItems: [
+        {
+          Put: {
+            TableName: TABLE_NAME.PRODUCT_TABLE,
+            Item: {
+              ...product,
+            },
+          },
+        },
+        {
+          Put: {
+            TableName: TABLE_NAME.STOCKS_TABLE,
+            Item: {
+              ...stock,
+            },
+          },
+        },
+      ],
+    })
+  );
+
+  return product;
 };
 
 export { findAll, findOne };

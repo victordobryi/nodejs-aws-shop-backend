@@ -16,6 +16,9 @@ export class ProductStack extends Stack {
     const getProductsById = new Lambda(this, 'getProductById');
     api.addIntegration('GET', '/products/{productId}', getProductsById);
 
+    const createProduct = new Lambda(this, 'createProduct');
+    api.addIntegration('POST', '/products', createProduct);
+
     new SwaggerUi(this, 'SwaggerUI', { resource: api.root });
   }
 }
