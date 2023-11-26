@@ -105,4 +105,4 @@ const createOne = async (body: string): Promise<FullProduct> => {
   return product;
 };
 
-export { findAll, findOne };
+export { findAll, findOne, createOne };

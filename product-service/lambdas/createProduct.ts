@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { buildResponse } from '../utils/buildResponse';
-import { findOne } from '../model/products.model';
+import { createOne } from '../model/products.model';
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const { body } = event;
@@ -11,7 +11,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     });
   }
   try {
-    const product = await findOne(body);
+    const product = await createOne(body);
 
     return buildResponse(200, product);
   } catch (error) {
