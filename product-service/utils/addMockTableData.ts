@@ -1,27 +1,28 @@
-import { BatchWriteItemCommand, DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { Product } from '../types/product';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { createProductsData } from './createProductsData';
 import { createStocksData } from './createStocksData';
 import { TABLE_NAME } from '../types/table';
-import { Stocks } from '../types/stocks';
+import { BatchWriteCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
 const client = new DynamoDBClient({});
+const documentClient = DynamoDBDocumentClient.from(client);
 
-const addMockTableData = async <T>(
-  client: DynamoDBClient,
+const addMockTableData = async <T extends Record<string, any>>(
+  documentClient: DynamoDBDocumentClient,
   tableName: string,
-  items: T[],
-  getItemAttributes: (item: T) => any
+  items: T[]
 ) => {
   try {
-    await client.send(
-      new BatchWriteItemCommand({
+    await documentClient.send(
+      new BatchWriteCommand({
         RequestItems: {
-          [tableName]: items.map((item) => ({
-            PutRequest: {
-              Item: getItemAttributes(item),
-            },
-          })),
+          [tableName]: items.map((item) => {
+            return {
+              PutRequest: {
+                Item: item,
+              },
+            };
+          }),
         },
       })
     );
@@ -33,19 +34,6 @@ const addMockTableData = async <T>(
 const products = createProductsData();
 const stocks = createStocksData(products);
 
-addMockTableData<Product>(
-  client,
-  TABLE_NAME.PRODUCT_TABLE,
-  products,
-  ({ id, description, title, price }) => ({
-    id: { S: id },
-    title: { S: title },
-    description: { S: description },
-    price: { N: price.toString() },
-  })
-);
+addMockTableData(documentClient, TABLE_NAME.PRODUCT_TABLE, products);
 
-addMockTableData<Stocks>(client, TABLE_NAME.STOCKS_TABLE, stocks, ({ product_id, count }) => ({
-  product_id: { S: product_id },
-  count: { N: count.toString() },
-}));
+addMockTableData(documentClient, TABLE_NAME.STOCKS_TABLE, stocks);

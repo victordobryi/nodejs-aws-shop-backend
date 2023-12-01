@@ -1,29 +1,39 @@
-import { DynamoDBClient, QueryCommand, ScanCommand } from '@aws-sdk/client-dynamodb';
-import { TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
-import { FullProduct, Product, ProductsRecord } from '../types/product';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import {
+  DynamoDBDocumentClient,
+  TransactWriteCommand,
+  ScanCommand,
+  QueryCommand,
+} from '@aws-sdk/lib-dynamodb';
+import { FullProduct, Product } from '../types/product';
 import { TABLE_NAME } from '../types/table';
-import { Stocks, StocksRecord } from '../types/stocks';
-import { unmarshall } from '@aws-sdk/util-dynamodb';
+import { Stocks } from '../types/stocks';
 import { TypedQueryOutput, TypedScanCommandOutput } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
 
-const client = new DynamoDBClient({});
+const client = new DynamoDBClient();
+
+const documentClient = DynamoDBDocumentClient.from(client, {
+  marshallOptions: {
+    removeUndefinedValues: true,
+  },
+});
 
 const findAll = async (): Promise<FullProduct[]> => {
-  const { Items: productItems } = (await client.send(
+  const { Items: productItems } = (await documentClient.send(
     new ScanCommand({
       TableName: TABLE_NAME.PRODUCT_TABLE,
     })
-  )) as TypedScanCommandOutput<ProductsRecord[]>;
+  )) as TypedScanCommandOutput<Product[]>;
 
-  const { Items: stocksItems } = (await client.send(
+  const { Items: stocksItems } = (await documentClient.send(
     new ScanCommand({
       TableName: TABLE_NAME.STOCKS_TABLE,
     })
-  )) as TypedScanCommandOutput<StocksRecord[]>;
+  )) as TypedScanCommandOutput<Stocks[]>;
 
-  const dbProducts: Product[] = productItems?.map((item: any) => unmarshall(item) as Product) ?? [];
-  const dbStocks: Stocks[] = stocksItems?.map((item: any) => unmarshall(item) as Stocks) ?? [];
+  const dbProducts: Product[] = productItems ?? [];
+  const dbStocks: Stocks[] = stocksItems ?? [];
 
   const dbFullProducts = dbProducts.map((product) => {
     const stock = dbStocks.find(({ product_id }) => product_id === product.id);
@@ -34,37 +44,37 @@ const findAll = async (): Promise<FullProduct[]> => {
 };
 
 const findOne = async (id: string): Promise<FullProduct | undefined> => {
-  const { Items: productsItem } = (await client.send(
+  const { Items: productsItem } = (await documentClient.send(
     new QueryCommand({
       TableName: TABLE_NAME.PRODUCT_TABLE,
       KeyConditionExpression: 'id = :id',
       ExpressionAttributeValues: {
-        ':id': { S: id },
+        ':id': id,
       },
     })
-  )) as TypedQueryOutput<ProductsRecord[]>;
+  )) as TypedQueryOutput<Product[]>;
 
   if (!productsItem?.length) {
     throw new Error('Product not found');
   }
 
-  const product = unmarshall(productsItem[0] as any) as Product;
+  const product = productsItem[0];
 
-  const { Items: stocksItem } = (await client.send(
+  const { Items: stocksItem } = (await documentClient.send(
     new QueryCommand({
       TableName: TABLE_NAME.STOCKS_TABLE,
       KeyConditionExpression: 'product_id = :product_id',
       ExpressionAttributeValues: {
-        ':product_id': { S: id },
+        ':product_id': id,
       },
     })
-  )) as TypedQueryOutput<StocksRecord[]>;
+  )) as TypedQueryOutput<Stocks[]>;
 
   if (!stocksItem?.length) {
     throw new Error('Stocks not found');
   }
 
-  const stock = unmarshall(stocksItem[0] as any) as Stocks;
+  const stock = stocksItem[0];
 
   const fullProduct = {
     ...product,
@@ -79,7 +89,7 @@ const createOne = async (body: string): Promise<FullProduct> => {
   const product: FullProduct = { id, ...JSON.parse(body) };
   const stock = { product_id: id, count: product.count };
 
-  await client.send(
+  await documentClient.send(
     new TransactWriteCommand({
       TransactItems: [
         {

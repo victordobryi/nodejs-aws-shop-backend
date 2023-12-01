@@ -27,7 +27,6 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.454.0",
     "@aws-sdk/lib-dynamodb": "^3.454.0",
-    "@aws-sdk/util-dynamodb": "^3.454.0",
     "@pepperize/cdk-apigateway-swagger-ui": "^0.0.907",
     "@types/aws-lambda": "^8.10.129",
     "aws-cdk-lib": "2.105.0",
