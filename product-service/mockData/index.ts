@@ -1,4 +1,5 @@
 import { Product } from '../types/product';
+import { Stocks } from '../types/stocks';
 
 export const products: Product[] = [
   {
@@ -36,5 +37,16 @@ export const products: Product[] = [
     id: '7567ec4b-b10c-45c5-9345-fc73c48a80a1',
     price: 15,
     title: 'ProductName',
+  },
+];
+
+export const stocks: Stocks[] = [
+  {
+    product_id: '7567ec4b-b10c-48c5-9345-fc73c48a80aa',
+    count: 1,
+  },
+  {
+    product_id: '7567ec4b-b10c-48c5-9345-fc73c48a80a1',
+    count: 4,
   },
 ];

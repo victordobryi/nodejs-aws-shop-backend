@@ -3,6 +3,8 @@ import { buildResponse } from '../utils/buildResponse';
 import { findOne } from '../model/products.model';
 
 export const handler = async (event: APIGatewayProxyEvent) => {
+  console.log(`getProductById lambda => event: ${JSON.stringify(event)}`);
+
   const { pathParameters } = event;
   if (!pathParameters?.productId) {
     return buildResponse(400, {
