@@ -20,10 +20,30 @@ export class ImportServiceStack extends cdk.Stack {
     const importProductsFile = new Lambda(this, 'importProductsFile');
     api.addIntegration('GET', '/import', importProductsFile);
 
+    const importFileParser = new Lambda(this, 'importFileParser');
+
     ImporServiceBucket.registerHandler({
       handler: importProductsFile,
       action: S3Actions.PUT,
       keyPrefix: Folders.UPLOADED,
+    });
+
+    ImporServiceBucket.registerHandler({
+      handler: importFileParser,
+      action: S3Actions.GET,
+      keyPrefix: Folders.UPLOADED,
+    });
+
+    ImporServiceBucket.registerHandler({
+      handler: importFileParser,
+      action: S3Actions.DELETE,
+      keyPrefix: Folders.UPLOADED,
+    });
+
+    ImporServiceBucket.registerHandler({
+      handler: importFileParser,
+      action: S3Actions.PUT,
+      keyPrefix: Folders.PARSED,
     });
   }
 }

@@ -8,26 +8,21 @@ import {
 } from '@aws-sdk/client-s3';
 import { client as s3Client } from '../client.js';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Readable } from 'stream';
 
-export const getObject = async (props: { bucketName: string; key: string }) => {
+export const getObject = async (props: { bucketName: string; key: string }): Promise<Readable> => {
   const { bucketName, key } = props;
 
   console.log(`get object ${bucketName}:${key}`);
 
-  try {
-    const command = new GetObjectCommand({
-      Bucket: bucketName,
-      Key: key,
-    });
+  const command = new GetObjectCommand({
+    Bucket: bucketName,
+    Key: key,
+  });
 
-    const response = await s3Client.send(command);
-    if (response.Body) {
-      const str = await response.Body.transformToString();
-      console.log(`result: ${str}`);
-    }
-  } catch (err) {
-    console.error(err);
-  }
+  const response = await s3Client.send(command);
+
+  return response.Body as Readable;
 };
 
 export const copyObject = async (props: {
