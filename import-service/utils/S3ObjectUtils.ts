@@ -107,7 +107,12 @@ export const deleteAllObjectsFromBucket = async (bucketName: string) => {
   }
 };
 
-export const generateSignedUrl = async (bucketName: string, key: string): Promise<string> => {
+export const generateSignedUrl = async (props: {
+  bucketName: string;
+  key: string;
+}): Promise<string> => {
+  const { key, bucketName } = props;
+
   const putCommand = new PutObjectCommand({
     Bucket: bucketName,
     Key: key,

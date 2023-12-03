@@ -11,6 +11,7 @@ import {
 import { Construct } from 'constructs';
 import { S3Actions } from '../types/actions';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 export class S3 extends Bucket {
   constructor(scope: Construct, bucketName: string, props?: BucketProps) {
@@ -30,7 +31,9 @@ export class S3 extends Bucket {
     });
   }
 
-  registerHandler(handler: IFunction, action: S3Actions, keyPrefix: string) {
+  registerHandler(props: { handler: IFunction; action: S3Actions; keyPrefix: string }) {
+    const { handler, action, keyPrefix } = props;
+
     handler.addToRolePolicy(this.createAccessPolicy(action, keyPrefix));
   }
 
