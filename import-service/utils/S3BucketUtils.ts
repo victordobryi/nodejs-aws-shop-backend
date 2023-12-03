@@ -1,34 +1,17 @@
-import {
-  CreateBucketCommand,
-  PutBucketPolicyCommand,
-  ListObjectsCommand,
-  DeleteBucketCommand,
-  GetObjectCommand,
-  PutObjectCommand,
-} from '@aws-sdk/client-s3';
+import { ListObjectsCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { client as s3Client } from '../client.js';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs';
 
-export const createBucket = (bucketName: string) => {
-  const createBucketCommand = new CreateBucketCommand({
-    Bucket: bucketName,
-  });
-
-  return s3Client.send(createBucketCommand);
-};
-
-export const deleteBucket = (bucketName: string) => {
-  const deleteBucketCommand = new DeleteBucketCommand({
-    Bucket: bucketName,
-  });
-
-  return s3Client.send(deleteBucketCommand);
-};
-
-export const listFilesInBucket = async (bucketName: string) => {
+const getContents = async (bucketName: string) => {
   const listObjectsCommand = new ListObjectsCommand({ Bucket: bucketName });
   const listObjectsResult = await s3Client.send(listObjectsCommand);
   const objects = listObjectsResult.Contents ?? [];
+  return objects;
+};
+
+export const listFilesInBucket = async (bucketName: string) => {
+  const objects = await getContents(bucketName);
+
   const contentsList = objects.map((c) => ` • ${c.Key}`).join('\n');
   console.log("\nHere's a list of files in the bucket:");
   console.log(contentsList + '\n');
@@ -41,9 +24,7 @@ export const downloadFilesFromBucket = async (props: { bucketName: string; path:
   if (!existsSync(path)) mkdirSync(path);
 
   try {
-    const listObjectsCommand = new ListObjectsCommand({ Bucket: bucketName });
-    const listObjectsResult = await s3Client.send(listObjectsCommand);
-    const objects = listObjectsResult.Contents ?? [];
+    const objects = await getContents(bucketName);
 
     for (let content of objects) {
       const obj = await s3Client.send(
@@ -85,29 +66,4 @@ export const uploadFilesToBucket = async (props: { bucketName: string; folderPat
   } catch (error) {
     console.log(error);
   }
-};
-
-export const putBucketPolicyAllowPuts = (props: { bucketName: string; sid: string }) => {
-  const { bucketName, sid } = props;
-  console.log(`Putting bucket policy to allow puts to ${bucketName}`);
-
-  const putBucketPolicyCommand = new PutBucketPolicyCommand({
-    Bucket: bucketName,
-    Policy: JSON.stringify({
-      Version: '2012-10-17',
-      Statement: [
-        {
-          Sid: sid,
-          Effect: 'Allow',
-          Principal: {
-            Service: 'ses.amazonaws.com',
-          },
-          Action: 's3:PutObject',
-          Resource: `arn:aws:s3:::${bucketName}/*`,
-        },
-      ],
-    }),
-  });
-
-  return s3Client.send(putBucketPolicyCommand);
 };
