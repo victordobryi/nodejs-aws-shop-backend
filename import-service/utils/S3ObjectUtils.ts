@@ -42,11 +42,11 @@ export const copyObject = async (props: {
   });
   const res = await s3Client.send(command);
 
-  console.log(`copied object with http status code ${res.$metadata.httpStatusCode}`);
+  // console.log(`copied object with http status code ${res.$metadata.httpStatusCode}`);
 
-  if (res.$metadata.httpStatusCode !== 200) {
-    throw new Error(`copy object error: ${res.$metadata.httpStatusCode}`);
-  }
+  // if (res.$metadata.httpStatusCode !== 200) {
+  //   throw new Error(`copy object error: ${res.$metadata.httpStatusCode}`);
+  // }
 
   console.log('copy finished');
 };
@@ -62,11 +62,11 @@ export const deleteObject = async (props: { bucketName: string; key: string }) =
   });
   const res = await s3Client.send(command);
 
-  console.log(`deleted object with http status code ${res.$metadata.httpStatusCode}`);
+  // console.log(`deleted object with http status code ${res.$metadata.httpStatusCode}`);
 
-  if (res.$metadata.httpStatusCode !== 204) {
-    throw new Error(`delete object error: ${res.$metadata.httpStatusCode}`);
-  }
+  // if (res.$metadata.httpStatusCode !== 204) {
+  //   throw new Error(`delete object error: ${res.$metadata.httpStatusCode}`);
+  // }
 
   console.log('delete finished');
 };
