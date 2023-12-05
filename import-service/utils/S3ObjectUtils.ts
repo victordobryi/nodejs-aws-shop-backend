@@ -35,17 +35,20 @@ export const copyObject = async (props: {
 
   console.log(`copy from ${sourceBucket}:${sourceKey} to ${destinationBucket}:${destinationKey}`);
 
-  try {
-    const command = new CopyObjectCommand({
-      Bucket: destinationBucket,
-      CopySource: `${sourceBucket}/${sourceKey}`,
-      Key: destinationKey,
-    });
-    await s3Client.send(command);
-    console.log('copy finished');
-  } catch (err) {
-    console.error(err);
+  const command = new CopyObjectCommand({
+    Bucket: destinationBucket,
+    CopySource: `${sourceBucket}/${sourceKey}`,
+    Key: destinationKey,
+  });
+  const res = await s3Client.send(command);
+
+  console.log(`copied object with http status code ${res.$metadata.httpStatusCode}`);
+
+  if (res.$metadata.httpStatusCode !== 200) {
+    throw new Error(`copy object error: ${res.$metadata.httpStatusCode}`);
   }
+
+  console.log('copy finished');
 };
 
 export const deleteObject = async (props: { bucketName: string; key: string }) => {
@@ -53,16 +56,19 @@ export const deleteObject = async (props: { bucketName: string; key: string }) =
 
   console.log(`delete object ${bucketName}:${key}`);
 
-  try {
-    const command = new DeleteObjectCommand({
-      Bucket: bucketName,
-      Key: key,
-    });
-    await s3Client.send(command);
-    console.log('delete finished');
-  } catch (err) {
-    console.error(err);
+  const command = new DeleteObjectCommand({
+    Bucket: bucketName,
+    Key: key,
+  });
+  const res = await s3Client.send(command);
+
+  console.log(`deleted object with http status code ${res.$metadata.httpStatusCode}`);
+
+  if (res.$metadata.httpStatusCode !== 204) {
+    throw new Error(`delete object error: ${res.$metadata.httpStatusCode}`);
   }
+
+  console.log('delete finished');
 };
 
 export const deleteObjects = async (props: { bucketName: string; keys: string[] }) => {

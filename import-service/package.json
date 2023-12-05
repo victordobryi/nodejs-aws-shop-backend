@@ -10,7 +10,8 @@
     "test": "jest",
     "cdk": "cdk",
     "deploy": "cdk deploy",
-    "destroy": "cdk destroy"
+    "destroy": "cdk destroy",
+    "convert": "ts-node ./mockData/convertToCsv.ts"
   },
   "devDependencies": {
     "@types/jest": "^29.5.5",

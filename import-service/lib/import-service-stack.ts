@@ -6,6 +6,8 @@ import { Lambda } from './Lambda';
 import { Folders } from '../types/folders';
 import { S3Actions } from '../types/actions';
 import { Buckets } from '../types/buckets';
+import { EventType } from 'aws-cdk-lib/aws-s3';
+import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 
 export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -45,5 +47,13 @@ export class ImportServiceStack extends cdk.Stack {
       action: S3Actions.PUT,
       keyPrefix: Folders.PARSED,
     });
+
+    ImporServiceBucket.addEventNotification(
+      EventType.OBJECT_CREATED,
+      new LambdaDestination(importFileParser),
+      {
+        prefix: Folders.UPLOADED,
+      }
+    );
   }
 }
