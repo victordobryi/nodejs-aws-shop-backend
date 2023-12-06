@@ -8,6 +8,7 @@ import { S3Actions } from '../types/actions';
 import { Buckets } from '../types/buckets';
 import { EventType } from 'aws-cdk-lib/aws-s3';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
+import { SwaggerUi } from '@pepperize/cdk-apigateway-swagger-ui';
 
 export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -55,5 +56,7 @@ export class ImportServiceStack extends cdk.Stack {
         prefix: Folders.UPLOADED,
       }
     );
+
+    new SwaggerUi(this, 'SwaggerUI', { resource: api.root });
   }
 }

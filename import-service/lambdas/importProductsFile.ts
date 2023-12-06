@@ -9,6 +9,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
 
   const fileName = event.queryStringParameters?.name;
 
+  console.log(`queryStringParameters.name => ${fileName}`);
+
   if (!fileName) {
     return buildResponse(400, {
       message: 'fileName is required',
@@ -20,6 +22,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       bucketName: Buckets.IMPORT_BUCKET,
       key: `${Folders.UPLOADED}/${fileName}`,
     });
+
+    console.log(`signedUrl => ${url}`);
 
     return buildResponse(200, url);
   } catch (error) {
