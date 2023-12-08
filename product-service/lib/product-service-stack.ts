@@ -1,4 +1,4 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { Duration, Stack, StackProps } from 'aws-cdk-lib';
 import { Lambda } from './Lambda';
 import { Construct } from 'constructs';
 import { ApiGateway } from './ApiGateway';
@@ -6,6 +6,8 @@ import { SwaggerUi } from '@pepperize/cdk-apigateway-swagger-ui';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
 import { DDBTable } from './DDBTable';
 import { TABLE_NAME } from '../types/table';
+import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 
 export class ProductStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -31,6 +33,28 @@ export class ProductStack extends Stack {
 
     const createProduct = new Lambda(this, 'createProduct');
     api.addIntegration('POST', '/products', createProduct);
+
+    const catalogBatchProcess = new Lambda(this, 'catalogBatchProcess');
+
+    const deadLetterQueue = new Queue(this, 'catalogItemsDeadLetterQueue', {
+      queueName: 'catalogItemsDeadLetterQueue',
+      retentionPeriod: Duration.days(7),
+    });
+
+    const uploadQueue = new Queue(this, 'catalogItemsQueue', {
+      queueName: 'catalogItemsQueue',
+      visibilityTimeout: Duration.seconds(30),
+      deadLetterQueue: {
+        maxReceiveCount: 1,
+        queue: deadLetterQueue,
+      },
+    });
+
+    // Bind the Lambda to the SQS Queue.
+    const invokeEventSource = new SqsEventSource(uploadQueue, {
+      batchSize: 5,
+    });
+    catalogBatchProcess.addEventSource(invokeEventSource);
 
     stocksTable.grantReadData(getProductsList);
     stocksTable.grantReadData(getProductsById);
