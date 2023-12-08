@@ -112,6 +112,8 @@ const createOne = async (body: string): Promise<FullProduct> => {
     })
   );
 
+  console.log('Product created', product);
+
   return product;
 };
 

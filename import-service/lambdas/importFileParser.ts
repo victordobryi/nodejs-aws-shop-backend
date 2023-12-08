@@ -2,6 +2,7 @@ import { S3Event } from 'aws-lambda';
 import { copyObject, deleteObject, getObject } from '../utils/S3ObjectUtils';
 import csvParser from 'csv-parser';
 import { Folders } from '../types/folders';
+import { sendMessage } from '../utils/SQSUtils';
 
 export const handler = async (event: S3Event): Promise<void> => {
   console.log(`importFileParser lambda => event: ${JSON.stringify(event)}`);
@@ -16,11 +17,14 @@ export const handler = async (event: S3Event): Promise<void> => {
   return new Promise<void>((resolve, reject) =>
     objects
       .pipe(csvParser())
-      ?.on('data', (record: object) => {
+      ?.on('data', async (record: object) => {
         console.log('Record:', record);
+
+        await sendMessage('queueUrl', record);
       })
       .on('end', async () => {
         console.log('Parse complete');
+
         await copyObject({
           sourceBucket: bucketName,
           sourceKey: key,
