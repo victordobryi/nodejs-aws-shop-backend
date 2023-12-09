@@ -8,6 +8,8 @@ import { DDBTable } from './DDBTable';
 import { TABLE_NAME } from '../types/table';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
+import { Topic } from 'aws-cdk-lib/aws-sns';
+import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 
 export class ProductStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -34,8 +36,6 @@ export class ProductStack extends Stack {
     const createProduct = new Lambda(this, 'createProduct');
     api.addIntegration('POST', '/products', createProduct);
 
-    const catalogBatchProcess = new Lambda(this, 'catalogBatchProcess');
-
     const deadLetterQueue = new Queue(this, 'catalogItemsDeadLetterQueue', {
       queueName: 'catalogItemsDeadLetterQueue',
       retentionPeriod: Duration.days(7),
@@ -47,6 +47,21 @@ export class ProductStack extends Stack {
       deadLetterQueue: {
         maxReceiveCount: 1,
         queue: deadLetterQueue,
+      },
+    });
+
+    // Create a SNS Topic.
+    const uploadEventTopic = new Topic(this, 'createProductTopic', {
+      topicName: 'createProductTopic',
+    });
+
+    const emailSubscription = new EmailSubscription('kasilkina@mail.ru');
+
+    uploadEventTopic.addSubscription(emailSubscription);
+
+    const catalogBatchProcess = new Lambda(this, 'catalogBatchProcess', {
+      environment: {
+        TOPIC_ARN: uploadEventTopic.topicArn,
       },
     });
 

@@ -1,12 +1,13 @@
 import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
 import * as path from 'path';
 
 export class Lambda extends NodejsFunction {
-  constructor(scope: Construct, fileName: string) {
+  constructor(scope: Construct, fileName: string, props?: NodejsFunctionProps) {
     super(scope, fileName, {
+      ...props,
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_18_X,
       entry: path.join(__dirname, `../lambdas/${fileName}.ts`),

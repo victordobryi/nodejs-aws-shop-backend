@@ -18,9 +18,7 @@ export const handler = async (event: S3Event): Promise<void> => {
     objects
       .pipe(csvParser())
       ?.on('data', async (record: object) => {
-        console.log('Record:', record);
-
-        await sendMessage('queueUrl', record);
+        await sendMessage('catalogItemsQueue', record);
       })
       .on('end', async () => {
         console.log('Parse complete');
