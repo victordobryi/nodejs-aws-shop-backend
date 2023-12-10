@@ -16,6 +16,4 @@ export const sendMessage = async (url: string, payload: Product[]) => {
       }),
     })
   );
-
-  console.log(`res => ${res}`);
 };

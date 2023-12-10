@@ -8,7 +8,7 @@ import { DDBTable } from './DDBTable';
 import { TABLE_NAME } from '../types/table';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { SnsEventSource, SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
-import { Topic } from 'aws-cdk-lib/aws-sns';
+import { SubscriptionFilter, Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { SqsDestination } from 'aws-cdk-lib/aws-lambda-destinations';
 
@@ -56,9 +56,20 @@ export class ProductStack extends Stack {
       topicName: 'createProductTopic',
     });
 
-    const emailSubscription = new EmailSubscription('kasilkina@mail.ru');
+    const emailSubscription1 = new EmailSubscription('kasilkina@mail.ru', {
+      filterPolicy: {
+        price: SubscriptionFilter.numericFilter({ greaterThan: 10 }),
+      },
+    });
 
-    uploadEventTopic.addSubscription(emailSubscription);
+    const emailSubscription2 = new EmailSubscription('dobr1nya@mail.ru', {
+      filterPolicy: {
+        price: SubscriptionFilter.numericFilter({ lessThanOrEqualTo: 10 }),
+      },
+    });
+
+    uploadEventTopic.addSubscription(emailSubscription1);
+    uploadEventTopic.addSubscription(emailSubscription2);
 
     const catalogBatchProcess = new Lambda(this, 'catalogBatchProcess', {
       onFailure: new SqsDestination(deadLetterQueue),

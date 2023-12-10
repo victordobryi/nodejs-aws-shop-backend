@@ -50,6 +50,7 @@ export const handler = async (event: S3Event) => {
 
   try {
     await sendMessage(process.env.UPLOAD_QUEUE_URL ?? '', products);
+    return buildResponse(200, {});
   } catch (error) {
     console.log(`SQS message sending error => ${error}`);
     return buildResponse(500, {

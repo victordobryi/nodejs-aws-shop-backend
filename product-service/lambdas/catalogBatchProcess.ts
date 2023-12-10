@@ -10,13 +10,14 @@ export const handler = async (event: SQSEvent) => {
 
   const records = event.Records;
   const products: FullProduct[] = [];
+
   try {
     for (const record of records) {
       const newProductData = await createOne(record.body);
-      console.log(`newProductData: ${newProductData}`);
+      console.log(`newProductData: ${JSON.stringify(newProductData)}`);
 
       products.push(newProductData);
-      console.log(`products: ${products}`);
+      console.log(`products: ${JSON.stringify(products)}`);
     }
     await snsClient.send(
       new PublishCommand({
