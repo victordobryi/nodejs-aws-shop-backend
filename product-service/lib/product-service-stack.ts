@@ -7,9 +7,10 @@ import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
 import { DDBTable } from './DDBTable';
 import { TABLE_NAME } from '../types/table';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
-import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
+import { SnsEventSource, SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
+import { SqsDestination } from 'aws-cdk-lib/aws-lambda-destinations';
 
 export class ProductStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -60,6 +61,7 @@ export class ProductStack extends Stack {
     uploadEventTopic.addSubscription(emailSubscription);
 
     const catalogBatchProcess = new Lambda(this, 'catalogBatchProcess', {
+      onFailure: new SqsDestination(deadLetterQueue),
       environment: {
         TOPIC_ARN: uploadEventTopic.topicArn,
       },
@@ -71,13 +73,24 @@ export class ProductStack extends Stack {
     });
     catalogBatchProcess.addEventSource(invokeEventSource);
 
+    uploadQueue.grantConsumeMessages(catalogBatchProcess);
+    deadLetterQueue.grantSendMessages(catalogBatchProcess);
+
     stocksTable.grantReadData(getProductsList);
     stocksTable.grantReadData(getProductsById);
     stocksTable.grantWriteData(createProduct);
+    stocksTable.grantWriteData(catalogBatchProcess);
+    stocksTable.grantReadData(catalogBatchProcess);
 
     productsTable.grantReadData(getProductsList);
     productsTable.grantReadData(getProductsById);
     productsTable.grantWriteData(createProduct);
+    productsTable.grantWriteData(catalogBatchProcess);
+    productsTable.grantReadData(catalogBatchProcess);
+
+    uploadEventTopic.grantPublish(catalogBatchProcess);
+
+    catalogBatchProcess.addEventSource(new SnsEventSource(uploadEventTopic));
 
     new SwaggerUi(this, 'SwaggerUI', { resource: api.root });
   }

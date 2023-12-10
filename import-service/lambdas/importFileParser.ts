@@ -3,8 +3,10 @@ import { copyObject, deleteObject, getObject } from '../utils/S3ObjectUtils';
 import csvParser from 'csv-parser';
 import { Folders } from '../types/folders';
 import { sendMessage } from '../utils/SQSUtils';
+import { Product } from '../../product-service/types/product';
+import { buildResponse } from '../utils/buildResponse';
 
-export const handler = async (event: S3Event): Promise<void> => {
+export const handler = async (event: S3Event) => {
   console.log(`importFileParser lambda => event: ${JSON.stringify(event)}`);
 
   const bucketName = event.Records[0].s3.bucket.name;
@@ -14,11 +16,13 @@ export const handler = async (event: S3Event): Promise<void> => {
 
   const objects = await getObject({ bucketName, key });
 
-  return new Promise<void>((resolve, reject) =>
+  const products: Product[] = [];
+
+  await new Promise<void>((resolve, reject) =>
     objects
       .pipe(csvParser())
       ?.on('data', async (record: object) => {
-        await sendMessage('catalogItemsQueue', record);
+        products.push(record as Product);
       })
       .on('end', async () => {
         console.log('Parse complete');
@@ -43,4 +47,13 @@ export const handler = async (event: S3Event): Promise<void> => {
         reject(error);
       })
   );
+
+  try {
+    await sendMessage(process.env.UPLOAD_QUEUE_URL ?? '', products);
+  } catch (error) {
+    console.log(`SQS message sending error => ${error}`);
+    return buildResponse(500, {
+      message: error instanceof Error && error.message,
+    });
+  }
 };

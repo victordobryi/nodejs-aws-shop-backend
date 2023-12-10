@@ -9,6 +9,8 @@ import { Buckets } from '../types/buckets';
 import { EventType } from 'aws-cdk-lib/aws-s3';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { SwaggerUi } from '@pepperize/cdk-apigateway-swagger-ui';
+import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -20,10 +22,20 @@ export class ImportServiceStack extends cdk.Stack {
       publicReadAccess: false,
     });
 
+    const uploadQueue = Queue.fromQueueArn(
+      this,
+      'catalogItemsQueue',
+      'arn:aws:sqs:us-east-1:665032699737:catalogItemsQueue'
+    );
+
     const importProductsFile = new Lambda(this, 'importProductsFile');
     api.addIntegration('GET', '/import', importProductsFile);
 
-    const importFileParser = new Lambda(this, 'importFileParser');
+    const importFileParser = new Lambda(this, 'importFileParser', {
+      environment: {
+        UPLOAD_QUEUE_URL: uploadQueue.queueUrl,
+      },
+    });
 
     ImporServiceBucket.registerHandler({
       handler: importProductsFile,
@@ -56,6 +68,16 @@ export class ImportServiceStack extends cdk.Stack {
         prefix: Folders.UPLOADED,
       }
     );
+
+    importFileParser.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['sqs:SendMessage'],
+        resources: [uploadQueue.queueArn],
+        effect: Effect.ALLOW,
+      })
+    );
+
+    uploadQueue.grantSendMessages(importFileParser);
 
     new SwaggerUi(this, 'SwaggerUI', { resource: api.root });
   }
