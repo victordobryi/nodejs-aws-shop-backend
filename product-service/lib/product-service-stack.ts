@@ -58,13 +58,13 @@ export class ProductStack extends Stack {
 
     const emailSubscription1 = new EmailSubscription('kasilkina@mail.ru', {
       filterPolicy: {
-        price: SubscriptionFilter.numericFilter({ greaterThan: 10 }),
+        totalCount: SubscriptionFilter.numericFilter({ greaterThan: 10 }),
       },
     });
 
     const emailSubscription2 = new EmailSubscription('dobr1nya@mail.ru', {
       filterPolicy: {
-        price: SubscriptionFilter.numericFilter({ lessThanOrEqualTo: 10 }),
+        totalCount: SubscriptionFilter.numericFilter({ lessThanOrEqualTo: 10 }),
       },
     });
 
