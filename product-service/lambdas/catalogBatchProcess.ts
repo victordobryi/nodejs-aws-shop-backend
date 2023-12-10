@@ -10,6 +10,7 @@ export const handler = async (event: SQSEvent) => {
 
   const records = event.Records;
   const products: FullProduct[] = [];
+  let totalCount = 0;
 
   try {
     for (const record of records) {
@@ -17,6 +18,7 @@ export const handler = async (event: SQSEvent) => {
       console.log(`newProductData: ${JSON.stringify(newProductData)}`);
 
       products.push(newProductData);
+      totalCount += Number(newProductData.count);
       console.log(`products: ${JSON.stringify(products)}`);
     }
     await snsClient.send(
@@ -24,8 +26,15 @@ export const handler = async (event: SQSEvent) => {
         TopicArn: process.env.TOPIC_ARN,
         Message: JSON.stringify({
           products,
+          totalCount,
           message: 'Products were successfully generated from csv',
         }),
+        MessageAttributes: {
+          totalCount: {
+            DataType: 'Number',
+            StringValue: totalCount.toString(),
+          },
+        },
       })
     );
     return buildResponse(200, products);
