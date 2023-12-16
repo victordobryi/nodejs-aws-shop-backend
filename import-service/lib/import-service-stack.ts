@@ -35,17 +35,15 @@ export class ImportServiceStack extends cdk.Stack {
       'arn:aws:lambda:us-east-1:665032699737:function:AuthorizationServiceStack-basicAuthorizerF74DD00A-Yeftyz1Wlk3u'
     );
 
-    const authorizer = new TokenAuthorizer(this, 'basicAuthorizer', {
+    const authorizer = new TokenAuthorizer(this, 'ImportApiAuthorizer', {
       handler: basicAuthorizer,
     });
 
     const importProductsFile = new Lambda(this, 'importProductsFile');
 
     api.addIntegration('GET', '/import', importProductsFile, {
-      defaultMethodOptions: {
-        authorizationType: AuthorizationType.CUSTOM,
-        authorizer: authorizer,
-      },
+      authorizationType: AuthorizationType.CUSTOM,
+      authorizer: authorizer,
     });
 
     const importFileParser = new Lambda(this, 'importFileParser', {
