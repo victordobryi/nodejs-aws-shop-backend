@@ -19,9 +19,13 @@ export const handler = async (event: APIGatewayTokenAuthorizerEvent, callback: C
       return buildResponse(403, { message: 'Access denied: Invalid authorization_token' });
     }
 
+    console.log(`storedPassword: ${storedPassword}`);
+
     const effect = !storedPassword || storedPassword !== password ? 'Deny' : 'Allow';
 
     const policy = generatePolicy(encodedCreds, effect, event.methodArn);
+
+    console.log(`policy: ${JSON.stringify(policy)}`);
 
     return buildResponse(200, policy);
   } catch (error) {
