@@ -10,7 +10,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "cdk": "cdk",
-    "cdk:deploy": "cdk deploy",
+    "deploy": "cdk deploy",
     "cdk:destroy": "cdk destroy",
     "mockDDB": "ts-node ./utils/addMockTableData.ts"
   },
@@ -26,11 +26,13 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.454.0",
+    "@aws-sdk/client-sns": "^3.470.0",
     "@aws-sdk/lib-dynamodb": "^3.454.0",
     "@pepperize/cdk-apigateway-swagger-ui": "^0.0.907",
     "@types/aws-lambda": "^8.10.129",
     "aws-cdk-lib": "2.105.0",
     "aws-sdk": "^2.1502.0",
+    "aws-sdk-client-mock": "^3.0.0",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21",
     "uuid": "^9.0.1"

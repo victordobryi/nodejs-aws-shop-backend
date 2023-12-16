@@ -1,4 +1,9 @@
 import { S3Client } from '@aws-sdk/client-s3';
-// This relies on a Region being set up in your local AWS config.
+import { SQSClient } from '@aws-sdk/client-sqs';
+import { SNSClient } from '@aws-sdk/client-sns';
+
 const client = new S3Client();
-export { client };
+const sqsClient = new SQSClient();
+const snsClient = new SNSClient();
+
+export { client, sqsClient, snsClient };

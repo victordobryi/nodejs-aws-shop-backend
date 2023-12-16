@@ -43,7 +43,7 @@ const findAll = async (): Promise<FullProduct[]> => {
   return dbFullProducts;
 };
 
-const findOne = async (id: string): Promise<FullProduct | undefined> => {
+const findOne = async (id: string) => {
   const { Items: productsItem } = (await documentClient.send(
     new QueryCommand({
       TableName: TABLE_NAME.PRODUCT_TABLE,
@@ -55,7 +55,7 @@ const findOne = async (id: string): Promise<FullProduct | undefined> => {
   )) as TypedQueryOutput<Product[]>;
 
   if (!productsItem?.length) {
-    throw new Error('Product not found');
+    return;
   }
 
   const product = productsItem[0];
@@ -71,7 +71,7 @@ const findOne = async (id: string): Promise<FullProduct | undefined> => {
   )) as TypedQueryOutput<Stocks[]>;
 
   if (!stocksItem?.length) {
-    throw new Error('Stocks not found');
+    return;
   }
 
   const stock = stocksItem[0];
@@ -111,6 +111,8 @@ const createOne = async (body: string): Promise<FullProduct> => {
       ],
     })
   );
+
+  console.log('Product created', product);
 
   return product;
 };
