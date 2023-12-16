@@ -1,10 +1,4 @@
-import {
-  Cors,
-  LambdaIntegration,
-  MethodOptions,
-  RestApi,
-  RestApiProps,
-} from 'aws-cdk-lib/aws-apigateway';
+import { Cors, LambdaIntegration, MethodOptions, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { IFunction } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 
