@@ -27,20 +27,6 @@ export const handler = async (event: APIGatewayTokenAuthorizerEvent, callback: C
   } catch (error) {
     return buildResponse(401, { message: 'Unauthorized: Authorization header not provided' });
   }
-
-  // switch (token) {
-  //   case 'allow':
-  //     callback(null, generatePolicy(encodedCreds, 'Allow', event.methodArn));
-  //     break;
-  //   case 'deny':
-  //     callback(null, generatePolicy(encodedCreds, 'Deny', event.methodArn));
-  //     break;
-  //   case 'unauthorized':
-  //     callback('Unauthorized');
-  //     break;
-  //   default:
-  //     callback('Error: Invalid token');
-  // }
 };
 
 const generatePolicy = (principalId: string, effect: string, resource: string) => {
