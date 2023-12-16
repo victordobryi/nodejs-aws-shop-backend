@@ -1,4 +1,4 @@
-import { Cors, LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { Cors, LambdaIntegration, RestApi, RestApiProps } from 'aws-cdk-lib/aws-apigateway';
 import { IFunction } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 
@@ -14,7 +14,7 @@ export class ApiGateway extends RestApi {
     });
   }
 
-  addIntegration(method: string, path: string, lambda: IFunction) {
+  addIntegration(method: string, path: string, lambda: IFunction, props?: RestApiProps) {
     const resource = this.root.resourceForPath(path);
     resource.addMethod(method, new LambdaIntegration(lambda));
   }

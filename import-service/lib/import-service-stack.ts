@@ -10,6 +10,8 @@ import { EventType } from 'aws-cdk-lib/aws-s3';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { SwaggerUi } from '@pepperize/cdk-apigateway-swagger-ui';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { AuthorizationType, TokenAuthorizer } from 'aws-cdk-lib/aws-apigateway';
+import { Function } from 'aws-cdk-lib/aws-lambda';
 
 export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -27,8 +29,24 @@ export class ImportServiceStack extends cdk.Stack {
       'arn:aws:sqs:us-east-1:665032699737:catalogItemsQueue'
     );
 
+    const basicAuthorizer = Function.fromFunctionArn(
+      this,
+      'basicAuthorizer',
+      'arn:aws:lambda:us-east-1:665032699737:function:AuthorizationServiceStack-basicAuthorizerF74DD00A-Yeftyz1Wlk3u'
+    );
+
+    const authorizer = new TokenAuthorizer(this, 'basicAuthorizer', {
+      handler: basicAuthorizer,
+    });
+
     const importProductsFile = new Lambda(this, 'importProductsFile');
-    api.addIntegration('GET', '/import', importProductsFile);
+
+    api.addIntegration('GET', '/import', importProductsFile, {
+      defaultMethodOptions: {
+        authorizationType: AuthorizationType.CUSTOM,
+        authorizer: authorizer,
+      },
+    });
 
     const importFileParser = new Lambda(this, 'importFileParser', {
       environment: {
