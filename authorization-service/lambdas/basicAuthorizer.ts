@@ -4,6 +4,10 @@ import { buildResponse } from '../utils/buildResponse';
 export const handler = async (event: APIGatewayTokenAuthorizerEvent, callback: Callback) => {
   try {
     const token = event.authorizationToken;
+
+    if (!token) {
+      return buildResponse(401, { message: 'Unauthorized: Authorization header not provided' });
+    }
     const encodedCreds = token.split(' ')[1];
     const buff = Buffer.from(encodedCreds, 'base64');
     const plainCreds = buff.toString('utf-8').split(':');
@@ -29,7 +33,9 @@ export const handler = async (event: APIGatewayTokenAuthorizerEvent, callback: C
 
     return buildResponse(200, policy);
   } catch (error) {
-    return buildResponse(401, { message: 'Unauthorized: Authorization header not provided' });
+    return buildResponse(500, {
+      message: error instanceof Error ? error.message : 'Internal server error',
+    });
   }
 };
 

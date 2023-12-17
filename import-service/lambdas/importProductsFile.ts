@@ -13,7 +13,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
 
   if (!fileName) {
     return buildResponse(400, {
-      message: 'fileName is required',
+      message: 'name is required',
     });
   }
 
@@ -28,7 +28,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     return buildResponse(200, url);
   } catch (error) {
     return buildResponse(500, {
-      message: error instanceof Error && error.message,
+      message: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 };

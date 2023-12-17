@@ -17,7 +17,9 @@ export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const api = new ApiGateway(this, 'ImportApi');
+    const api = new ApiGateway(this, 'ImportApi', {
+      defaultMethodOptions: {},
+    });
 
     const ImporServiceBucket = new S3(this, Buckets.IMPORT_BUCKET, {
       publicReadAccess: false,
@@ -44,6 +46,25 @@ export class ImportServiceStack extends cdk.Stack {
     api.addIntegration('GET', '/import', importProductsFile, {
       authorizationType: AuthorizationType.CUSTOM,
       authorizer: authorizer,
+      methodResponses: [
+        {
+          statusCode: '200',
+          responseParameters: {
+            'method.response.header.Content-Type': true,
+            'method.response.header.Access-Control-Allow-Origin': true,
+          },
+        },
+      ],
+    });
+
+    api.addGatewayResponse('GatewayResponse4XX', {
+      type: cdk.aws_apigateway.ResponseType.DEFAULT_4XX,
+      responseHeaders: {
+        'Access-Control-Allow-Origin': "'*'",
+        'Access-Control-Allow-Headers':
+          "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+        'Access-Control-Allow-Methods': "'OPTIONS,GET,PUT'",
+      },
     });
 
     const importFileParser = new Lambda(this, 'importFileParser', {
