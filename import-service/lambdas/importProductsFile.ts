@@ -28,7 +28,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     return buildResponse(200, url);
   } catch (error) {
     return buildResponse(500, {
-      message: error instanceof Error ? error.message : 'Internal server error',
+      message: 'Internal server error',
     });
   }
 };

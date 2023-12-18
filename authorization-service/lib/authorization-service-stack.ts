@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import 'dotenv/config';
 import { Lambda } from './Lambda';
+import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 const userName = process.env.USER_NAME ?? '';
 const userPassword = process.env.USER_PASSWORD ?? '';
@@ -14,6 +15,10 @@ export class AuthorizationServiceStack extends cdk.Stack {
       environment: {
         [userName]: userPassword,
       },
+    });
+
+    basicAuthorizer.grantInvoke({
+      grantPrincipal: new ServicePrincipal('apigateway.amazonaws.com'),
     });
   }
 }

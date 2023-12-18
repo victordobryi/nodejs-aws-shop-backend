@@ -17,8 +17,16 @@ export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const api = new ApiGateway(this, 'ImportApi', {
-      defaultMethodOptions: {},
+    const api = new ApiGateway(this, 'ImportApi');
+
+    api.addGatewayResponse('GatewayResponse4XX', {
+      type: cdk.aws_apigateway.ResponseType.DEFAULT_4XX,
+      responseHeaders: {
+        'Access-Control-Allow-Origin': "'*'",
+        'Access-Control-Allow-Headers':
+          "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+        'Access-Control-Allow-Methods': "'OPTIONS,GET,PUT'",
+      },
     });
 
     const ImporServiceBucket = new S3(this, Buckets.IMPORT_BUCKET, {
@@ -55,16 +63,6 @@ export class ImportServiceStack extends cdk.Stack {
           },
         },
       ],
-    });
-
-    api.addGatewayResponse('GatewayResponse4XX', {
-      type: cdk.aws_apigateway.ResponseType.DEFAULT_4XX,
-      responseHeaders: {
-        'Access-Control-Allow-Origin': "'*'",
-        'Access-Control-Allow-Headers':
-          "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-        'Access-Control-Allow-Methods': "'OPTIONS,GET,PUT'",
-      },
     });
 
     const importFileParser = new Lambda(this, 'importFileParser', {
