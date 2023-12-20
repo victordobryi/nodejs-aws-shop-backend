@@ -9,7 +9,9 @@ export const handler: Handler<APIGatewayTokenAuthorizerEvent> = async (event, _,
 
   console.log(`token: ${token}`);
 
-  const [username, password] = atob(token.replace('Basic ', '')).split(':');
+  const encodedCreds = token.split(' ')[1];
+  const buff = Buffer.from(encodedCreds, 'base64').toString('utf-8');
+  const [username, password] = buff.split(':');
 
   console.log(`username: ${username}, password: ${password}`);
 
