@@ -1,7 +1,3 @@
-# These folders will created in docker build process
-node_modules
-dist
-
 # These folders don't use in production version
 test
 
@@ -15,3 +11,6 @@ README.md
 .gitignore
 .git
 
+# These folders will created in docker build process
+dist
+node_modules

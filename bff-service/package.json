@@ -20,7 +20,11 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "docker:build": "docker build -t victordobryi-bff-service .",
-    "docker:run": "docker run --env-file ./.env -t victordobryi-bff-service"
+    "docker:run": "docker run --env-file ./.env -t victordobryi-bff-service",
+    "eb:init": "eb init --region us-east-1 victordobryi-bff-api",
+    "eb:create": "eb create bffdev --cname victordobryi-bff-api-bffdev --single --timeout 20 --instance-types=t2.micro,t2.small",
+    "eb:deploy": "eb deploy victordobryi-bff-api-bffdev",
+    "eb:destroy": "eb terminate"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
