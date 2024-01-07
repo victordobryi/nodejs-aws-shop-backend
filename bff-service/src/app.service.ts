@@ -1,14 +1,18 @@
 import {
   BadGatewayException,
+  Inject,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import axios, { AxiosRequestConfig } from 'axios';
 import { parse } from 'querystring';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class AppService {
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
   async getServiceResponse(service: string, request: Request) {
     const { method, headers, body, originalUrl } = request;
 
@@ -16,6 +20,16 @@ export class AppService {
 
     if (!serviceUrl) {
       throw new BadGatewayException('Cannot process request');
+    }
+
+    const isCacheRequest = method === 'GET' && originalUrl === '/product';
+
+    if (isCacheRequest) {
+      const cache = (await this.cacheManager.get(originalUrl)) as any;
+
+      if (cache) {
+        return cache;
+      }
     }
 
     const queryParamsString = originalUrl.split('?')[1];
@@ -39,6 +53,10 @@ export class AppService {
         data: response.data,
         status: response.status,
       };
+
+      if (isCacheRequest) {
+        await this.cacheManager.set(originalUrl, result);
+      }
 
       return result;
     } catch (e) {
